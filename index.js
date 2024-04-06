@@ -4,7 +4,7 @@ const db = require("./db");
 const appError = require("./errors/app_error");
 
 const app = express();
-const port = 8080; // or any port you prefer
+const port = process.env.PORT || 3001;
 
 app.use(express.json());
 app.use("/api", routes);

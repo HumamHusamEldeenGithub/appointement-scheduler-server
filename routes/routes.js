@@ -1,10 +1,11 @@
 const express = require("express");
 const appointmentService = require("../service/appointment");
 const checker = require("../utils/is_valid_checker");
+const authenticate = require("../middlewares/authentication");
 
 const router = express.Router();
 
-router.post("/appointments", async (req, res, next) => {
+router.post("/appointments", authenticate, async (req, res, next) => {
   try {
     const patientName = req.body.patientName;
     checker.isValidString("patientName", patientName);
@@ -27,7 +28,7 @@ router.post("/appointments", async (req, res, next) => {
   }
 });
 
-router.get("/appointments", async (req, res, next) => {
+router.get("/appointments", authenticate, async (req, res, next) => {
   try {
     const startDate = req.query.startDate;
     checker.isValidDate("startDate", startDate);
@@ -44,7 +45,7 @@ router.get("/appointments", async (req, res, next) => {
   }
 });
 
-router.get("/appointments/:id", async (req, res, next) => {
+router.get("/appointments/:id", authenticate, async (req, res, next) => {
   try {
     const id = req.params.id;
     const appointment = await appointmentService.getAppointement(id);
@@ -54,11 +55,19 @@ router.get("/appointments/:id", async (req, res, next) => {
   }
 });
 
-router.patch("/appointments/:id", async (req, res, next) => {
+router.patch("/appointments/:id", authenticate, async (req, res, next) => {
   try {
     const id = req.params.id;
 
     var paramsToUpdate = {};
+
+    const patientName = req.body.patientName;
+    if (
+      patientName !== undefined &&
+      checker.isValidString("patientName", patientName)
+    )
+      paramsToUpdate.patientName = patientName;
+
     const phoneNumber = req.body.phoneNumber;
     if (
       phoneNumber !== undefined &&
@@ -91,7 +100,7 @@ router.patch("/appointments/:id", async (req, res, next) => {
   }
 });
 
-router.delete("/appointments/:id", async (req, res, next) => {
+router.delete("/appointments/:id", authenticate, async (req, res, next) => {
   try {
     const id = req.params.id;
     const appointment = await appointmentService.deleteAppointement(id);

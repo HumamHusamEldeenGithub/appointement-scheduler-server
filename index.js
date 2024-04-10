@@ -1,25 +1,25 @@
 const express = require("express");
+require("./db/db");
+const cors = require("cors");
+const authRoutes = require("./routes/auth");
+const userRoutes = require("./routes/user");
 const routes = require("./routes/routes");
-const db = require("./db");
 const appError = require("./errors/app_error");
 
 const app = express();
 const port = process.env.PORT || 3001;
 
+app.use(cors());
 app.use(express.json());
+app.use("/auth", authRoutes);
+app.use("/users", userRoutes);
 app.use("/api", routes);
-
-// Middleware to set content type to JSON for all routes
-app.use((req, res, next) => {
-  res.setHeader("Content-Type", "application/json");
-  next();
-});
 
 app.use(function (err, req, res, next) {
   console.error(err);
   res.setHeader("Content-Type", "application/json");
   if (err instanceof appError.AppError) {
-    res.status(err.statusCode).send(JSON.stringify(err));
+    res.status(err.statusCode).send(err);
     return;
   }
   res

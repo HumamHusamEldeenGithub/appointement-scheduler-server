@@ -30,7 +30,12 @@ router.post("/register", authenticate, async (req, res, next) => {
     const role = req.body.role;
     checker.isValidString("role", role);
 
-    const response = await auth.RegisterUser(username, password, role);
+    const response = await auth.RegisterUser(
+      req.user.userId,
+      username,
+      password,
+      role
+    );
     res.send(response);
   } catch (err) {
     next(err);

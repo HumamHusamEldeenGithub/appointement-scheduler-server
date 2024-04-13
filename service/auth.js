@@ -3,9 +3,12 @@ const UserModel = require("../models/user");
 const UserService = require("./user");
 const { createAppError } = require("../errors/app_error");
 const { CreateToken } = require("../auth/jwt");
+const validateUsername = require("../utils/is_valid_username");
+const validatePassword = require("../utils/is_valid_password");
 
 async function Login(username, password) {
   try {
+    username = username.toLowerCase().trim();
     const user = await UserModel.findOne({
       username: { $eq: username },
     });
@@ -32,12 +35,17 @@ async function Login(username, password) {
   }
 }
 
-async function RegisterUser(username, password, role) {
+async function RegisterUser(callerID,username, password, role) {
   try {
-    const isAdmin = await UserService.isAdmin(req.user.userId);
-    if (!isAdmin) {
+    const admin = await UserService.isAdmin(callerID);
+    if (!admin) {
       createAppError(400, "user doesn't have permissions to register a user");
     }
+
+    username = username.toLowerCase().trim();
+
+    validateUsername(username);
+    validatePassword(password);
 
     const hashedPassword = await bcrypt.hash(password, 10);
     const user = new UserModel({

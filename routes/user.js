@@ -5,7 +5,7 @@ const authenticate = require("../middlewares/authentication");
 
 const router = express.Router();
 
-router.get("/users", authenticate, async (req, res, next) => {
+router.get("/", authenticate, async (req, res, next) => {
   try {
     const users = await userService.getUsers();
     res.send(users);
@@ -14,49 +14,39 @@ router.get("/users", authenticate, async (req, res, next) => {
   }
 });
 
-router.patch("/users/:id", authenticate, async (req, res, next) => {
-    try {
-      const id = req.params.id;
-  
-      var paramsToUpdate = {};
-  
-      const patientName = req.body.patientName;
-      if (
-        patientName !== undefined &&
-        checker.isValidString("patientName", patientName)
-      )
-        paramsToUpdate.patientName = patientName;
-  
-      const phoneNumber = req.body.phoneNumber;
-      if (
-        phoneNumber !== undefined &&
-        checker.isValidString("phoneNumber", phoneNumber)
-      )
-        paramsToUpdate.phoneNumber = phoneNumber;
-  
-      const startDate = req.body.startDate;
-      if (startDate !== undefined && checker.isValidDate("startDate", startDate))
-        paramsToUpdate.startDate = startDate;
-  
-      const endDate = req.body.endDate;
-      if (endDate !== undefined && checker.isValidString("endDate", endDate))
-        paramsToUpdate.endDate = endDate;
-  
-      const isScheduled = req.body.isScheduled;
-      if (isScheduled !== undefined) paramsToUpdate.isScheduled = isScheduled;
-  
-      const appointmentCompleted = req.body.appointmentCompleted;
-      if (appointmentCompleted !== undefined)
-        paramsToUpdate.appointmentCompleted = appointmentCompleted;
-  
-      const appointment = await appointmentService.updateAppointement(
-        id,
-        paramsToUpdate
-      );
-      res.send(appointment);
-    } catch (err) {
-      next(err);
-    }
-  });
+router.patch("/:id", authenticate, async (req, res, next) => {
+  try {
+    const id = req.params.id;
+
+    var paramsToUpdate = {};
+
+    const password = req.body.password;
+    if (password !== undefined && checker.isValidString("password", password))
+      paramsToUpdate.password = password;
+
+    // const role = req.body.role;
+    // if (role !== undefined && checker.isValidString("role", role))
+    //   paramsToUpdate.role = role;
+
+    const user = await userService.updateUser(
+      req.user.userId,
+      id,
+      paramsToUpdate
+    );
+    res.send(user);
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.delete("/:id", authenticate, async (req, res, next) => {
+  try {
+    const id = req.params.id;
+    const response = await userService.deleteUser(req.user.userId, id);
+    res.send(response);
+  } catch (err) {
+    next(err);
+  }
+});
 
 module.exports = router;

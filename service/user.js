@@ -1,9 +1,10 @@
 const { createAppError } = require("../errors/app_error");
 const UserModel = require("../models/user");
+const bcrypt = require("bcrypt");
 
 async function isAdmin(id) {
   try {
-    const user = await UserModel.findOne(id);
+    const user = await UserModel.findById(id);
     if (user.role === "admin") {
       return true;
     } else {
@@ -36,12 +37,37 @@ async function getUsers() {
     });
 }
 
-async function deleteUser(adminId, id) {
-  const isAdmin = await isAdmin(adminId);
-  if (!isAdmin) {
-    createAppError(403, "not authorized");
+async function updateUser(callerId, id, updatedObject) {
+  if (callerId !== id) {
+    const admin = await isAdmin(callerId);
+    if (!admin) {
+      createAppError(403, "user doesn't have permissions to update this user");
+    }
   }
+
+  if (updatedObject.password) {
+    updatedObject.password = await bcrypt.hash(updatedObject.password, 10);
+  }
+
+  return UserModel.findByIdAndUpdate(id, updatedObject)
+    .then((user) => {
+      return user;
+    })
+    .catch((error) => {
+      console.error("Error updating user:", error);
+      throw error;
+    });
+}
+
+async function deleteUser(callerId, id) {
+  console.log("ENTERRR");
+  const admin = await isAdmin(callerId);
+  if (!admin) {
+    createAppError(403, "user doesn't have permissions to delete a user");
+  }
+
   const user = await getUser(id);
+  console.log(user);
   if (user.username === "admin") {
     createAppError(403, "admin account can't be deleted");
   }
@@ -56,5 +82,6 @@ module.exports = {
   isAdmin,
   getUsers,
   getUser,
+  updateUser,
   deleteUser,
 };

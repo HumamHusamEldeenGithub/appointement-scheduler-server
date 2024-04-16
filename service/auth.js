@@ -2,7 +2,11 @@ const bcrypt = require("bcrypt");
 const UserModel = require("../models/user");
 const UserService = require("./user");
 const { createAppError } = require("../errors/app_error");
-const { CreateToken } = require("../auth/jwt");
+const {
+  CreateToken,
+  CreateRefreshToken,
+  VerifyRefreshToken,
+} = require("../auth/jwt");
 const validateUsername = require("../utils/is_valid_username");
 const validatePassword = require("../utils/is_valid_password");
 
@@ -23,6 +27,29 @@ async function Login(username, password) {
     }
 
     const token = CreateToken(user._id);
+    const refreshToken = CreateRefreshToken(user._id);
+
+    return {
+      token: token,
+      refreshToken: refreshToken,
+    };
+  } catch (e) {
+    console.error("Error logging in:", e);
+    throw e;
+  }
+}
+
+async function LoginWithRefreshToken(userRefreshToken) {
+  try {
+    const decodedUser = VerifyRefreshToken(userRefreshToken);
+
+    const user = await UserModel.findById(decodedUser.userId);
+
+    if (!user) {
+      createAppError(404, "user not found");
+    }
+
+    const token = CreateToken(user._id);
     const refreshToken = CreateToken(user._id);
 
     return {
@@ -30,12 +57,12 @@ async function Login(username, password) {
       refreshToken: refreshToken,
     };
   } catch (e) {
-    console.error("Error getting user:", e);
+    console.error("Error logging in with refresh token:", e);
     throw e;
   }
 }
 
-async function RegisterUser(callerID,username, password, role) {
+async function RegisterUser(callerID, username, password, role) {
   try {
     const admin = await UserService.isAdmin(callerID);
     if (!admin) {
@@ -57,7 +84,7 @@ async function RegisterUser(callerID,username, password, role) {
     const generetedUser = await user.save();
 
     const token = CreateToken(generetedUser._id);
-    const refreshToken = CreateToken(generetedUser._id);
+    const refreshToken = CreateRefreshToken(generetedUser._id);
 
     return {
       token: token,
@@ -73,4 +100,4 @@ async function RegisterUser(callerID,username, password, role) {
   }
 }
 
-module.exports = { Login, RegisterUser };
+module.exports = { Login, LoginWithRefreshToken, RegisterUser };

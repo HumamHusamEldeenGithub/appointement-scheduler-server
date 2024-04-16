@@ -14,7 +14,7 @@ const authenticate = (req, res, next) => {
     VerifyToken(req, token, false);
     next();
   } catch (error) {
-    return res.status(400).send("Invalid Token.");
+    return res.status(401).send(new AppError("invalid token.", 401));
   }
 };
 

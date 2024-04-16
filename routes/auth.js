@@ -21,6 +21,17 @@ router.post("/login", async (req, res, next) => {
   }
 });
 
+router.post("/login/refresh-token", async (req, res, next) => {
+  try {
+    const refreshToken = req.body.refreshToken;
+
+    const response = await auth.LoginWithRefreshToken(refreshToken);
+    res.send(response);
+  } catch (err) {
+    next(err);
+  }
+});
+
 router.post("/register", authenticate, async (req, res, next) => {
   try {
     const username = req.body.username;

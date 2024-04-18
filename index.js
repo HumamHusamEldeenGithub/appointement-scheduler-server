@@ -3,17 +3,22 @@ require("./db/db");
 const cors = require("cors");
 const authRoutes = require("./routes/auth");
 const userRoutes = require("./routes/user");
-const routes = require("./routes/routes");
+const appointmentRoutes = require("./routes/appointment");
 const appError = require("./errors/app_error");
 
 const app = express();
 const port = process.env.PORT || 3001;
 
+const apiRouter = express.Router();
+
 app.use(cors());
 app.use(express.json());
-app.use("/auth", authRoutes);
-app.use("/users", userRoutes);
-app.use("/api", routes);
+app.use("/api", apiRouter);
+
+
+apiRouter.use("/auth", authRoutes);
+apiRouter.use("/users", userRoutes);
+apiRouter.use("/appointments", appointmentRoutes);
 
 app.use(function (err, req, res, next) {
   console.error(err);

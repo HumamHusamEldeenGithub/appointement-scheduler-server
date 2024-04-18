@@ -1,6 +1,7 @@
 const { createAppError } = require("../errors/app_error");
 const UserModel = require("../models/user");
 const bcrypt = require("bcrypt");
+const validatePassword = require("../utils/is_valid_password");
 
 async function isAdmin(id) {
   try {
@@ -46,6 +47,7 @@ async function updateUser(callerId, id, updatedObject) {
   }
 
   if (updatedObject.password) {
+    validatePassword(updatedObject.password);
     updatedObject.password = await bcrypt.hash(updatedObject.password, 10);
   }
 
@@ -60,7 +62,6 @@ async function updateUser(callerId, id, updatedObject) {
 }
 
 async function deleteUser(callerId, id) {
-  console.log("ENTERRR");
   const admin = await isAdmin(callerId);
   if (!admin) {
     createAppError(403, "user doesn't have permissions to delete a user");

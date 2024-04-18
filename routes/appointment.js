@@ -5,16 +5,17 @@ const authenticate = require("../middlewares/authentication");
 
 const router = express.Router();
 
-router.post("/appointments", authenticate, async (req, res, next) => {
+router.post("/", authenticate, async (req, res, next) => {
   try {
     const patientName = req.body.patientName;
     checker.isValidString("patientName", patientName);
     const phoneNumber = req.body.phoneNumber;
-    checker.isValidString("phoneNumber", phoneNumber);
     const startDate = req.body.startDate;
     checker.isValidDate("startDate", startDate);
     const endDate = req.body.endDate;
     checker.isValidDate("endDate", endDate);
+
+    checker.isValidDateRange(startDate, endDate);
 
     const response = await appointmentService.createAppointment(
       patientName,
@@ -28,7 +29,7 @@ router.post("/appointments", authenticate, async (req, res, next) => {
   }
 });
 
-router.get("/appointments", authenticate, async (req, res, next) => {
+router.get("/", authenticate, async (req, res, next) => {
   try {
     const startDate = req.query.startDate;
     checker.isValidDate("startDate", startDate);
@@ -45,7 +46,7 @@ router.get("/appointments", authenticate, async (req, res, next) => {
   }
 });
 
-router.get("/appointments/:id", authenticate, async (req, res, next) => {
+router.get("/:id", authenticate, async (req, res, next) => {
   try {
     const id = req.params.id;
     const appointment = await appointmentService.getAppointement(id);
@@ -55,7 +56,7 @@ router.get("/appointments/:id", authenticate, async (req, res, next) => {
   }
 });
 
-router.patch("/appointments/:id", authenticate, async (req, res, next) => {
+router.patch("/:id", authenticate, async (req, res, next) => {
   try {
     const id = req.params.id;
 
@@ -83,6 +84,12 @@ router.patch("/appointments/:id", authenticate, async (req, res, next) => {
     if (endDate !== undefined && checker.isValidString("endDate", endDate))
       paramsToUpdate.endDate = endDate;
 
+    if (
+      paramsToUpdate.startDate !== undefined &&
+      paramsToUpdate.endDate !== undefined
+    )
+      checker.isValidDateRange(startDate, endDate);
+
     const isScheduled = req.body.isScheduled;
     if (isScheduled !== undefined) paramsToUpdate.isScheduled = isScheduled;
 
@@ -100,7 +107,7 @@ router.patch("/appointments/:id", authenticate, async (req, res, next) => {
   }
 });
 
-router.delete("/appointments/:id", authenticate, async (req, res, next) => {
+router.delete("/:id", authenticate, async (req, res, next) => {
   try {
     const id = req.params.id;
     const appointment = await appointmentService.deleteAppointement(id);

@@ -13,7 +13,22 @@ function isValidDate(parameter, dateString) {
   return true;
 }
 
+function isValidDateRange(startDate, endDate) {
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+  if (
+    isNaN(start) ||
+    isNaN(end) ||
+    start.toISOString() === "Invalid Date" ||
+    end.toISOString() === "Invalid Date" ||
+    start.getTime() >= end.getTime()
+  )
+    appError.invalidDates();
+  return true;
+}
+
 module.exports = {
   isValidString,
   isValidDate,
+  isValidDateRange,
 };

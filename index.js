@@ -32,12 +32,11 @@ app.use(function (err, req, res, next) {
     .send(new appError.AppError(`internal server error: ${err.message}`, 500));
 });
 
-// Define routes
+
 app.get("/", (req, res) => {
   res.send("Dr. Sohayb Alayoubi Scheduler Application");
 });
 
-// Start the server
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });

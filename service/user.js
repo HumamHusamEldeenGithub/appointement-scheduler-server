@@ -41,7 +41,8 @@ async function getUsers() {
 async function updateUser(callerId, id, updatedObject) {
   if (callerId !== id) {
     const admin = await isAdmin(callerId);
-    if (!admin) {
+    const userToUpdateIsAdmin = await isAdmin(id);
+    if (!admin || userToUpdateIsAdmin) {
       createAppError(403, "user doesn't have permissions to update this user");
     }
   }
@@ -68,7 +69,6 @@ async function deleteUser(callerId, id) {
   }
 
   const user = await getUser(id);
-  console.log(user);
   if (user.username === "admin") {
     createAppError(403, "admin account can't be deleted");
   }
